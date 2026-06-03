@@ -34,3 +34,7 @@ https://geoniteroi.maps.arcgis.com/apps/instant/lookup/index.html?appid=6b957c6c
 ## Como abrir
 
 Abra o arquivo `index.html` no navegador ou publique a pasta em um servidor interno/GitHub Pages.
+
+## Evolução para sistema funcional
+
+O plano para transformar este protótipo em um sistema interno com banco de dados está em [`PLANO-FUNCIONAL.md`](PLANO-FUNCIONAL.md).
