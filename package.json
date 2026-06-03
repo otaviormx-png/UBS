@@ -1,0 +1,13 @@
+{
+  "name": "busca-ativa-ubs-largo-da-batalha",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sistema interno de busca ativa da UBS Largo da Batalha.",
+  "scripts": {
+    "start": "node server/app.js",
+    "check": "node --check server/app.js && node --check public/busca-ativa-ubs.js"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

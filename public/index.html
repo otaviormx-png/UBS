@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Busca Ativa | UBS Largo da Batalha</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="busca-ativa-ubs.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="cross">+</div>
+      <div><h1>Busca Ativa UBS</h1><div class="subtitle">Painel interno de acompanhamento territorial</div></div>
+    </div>
+    <div class="profile"><div class="profile-text"><b>UBS Largo da Batalha</b><br>Equipe de Saúde</div><div class="avatar">UBS</div></div>
+  </header>
+  <div class="demo-banner"><b>CARREGANDO:</b> verificando conexão com o servidor interno.</div>
+  <main>
+    <section class="heading">
+      <div><h2>Mapa de busca ativa</h2><p>UBS Largo da Batalha | visão integrada por paciente e microárea</p></div>
+      <div class="date">Sistema interno funcional</div>
+    </section>
+    <section class="metrics">
+      <div class="metric"><span>Pacientes monitorados</span><strong id="totalMetric">8</strong></div>
+      <div class="metric orange"><span>Prioridade alta</span><strong id="highMetric">3</strong></div>
+      <div class="metric"><span>Visitas agendadas</span><strong id="scheduledMetric">2</strong></div>
+      <div class="metric"><span>Casos concluídos</span><strong id="doneMetric">1</strong></div>
+    </section>
+    <section class="workspace">
+      <div class="map-side">
+        <div class="map-search">
+          <h3>Conferir se o endereço é da UBS</h3>
+          <div class="map-search-row">
+            <input id="addressCheck" placeholder="Ex.: Rua Camilo Pereira, 111, Niterói">
+            <button class="button" onclick="checkAddress()">Verificar</button>
+          </div>
+          <div class="map-search-result" id="checkResult">Digite um endereço para validar no território cinza.</div>
+        </div>
+        <div id="map"></div>
+        <div class="map-note"><b>Área oficial da UBS em cinza</b><br>Território publicado pela Prefeitura de Niterói. Clique em um marcador ou em uma linha da planilha para visualizar o atendimento.</div>
+      </div>
+      <div class="table-side">
+        <div class="panel-title"><h3>Planilha interativa de pacientes</h3><button class="button secondary" onclick="resetFilters()">Limpar filtros</button></div>
+        <div class="filters">
+          <input id="search" placeholder="Buscar paciente, rua ou motivo..." oninput="render()">
+          <select id="priorityFilter" onchange="render()"><option value="">Todas prioridades</option><option>Alta</option><option>Média</option><option>Baixa</option></select>
+          <select id="statusFilter" onchange="render()"><option value="">Todos os status</option><option>Pendente</option><option>Visita agendada</option><option>Contato realizado</option><option>Concluído</option></select>
+          <select id="areaFilter" onchange="render()"><option value="">Todas microáreas</option><option>01</option><option>02</option><option>03</option><option>04</option></select>
+        </div>
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Paciente</th><th>DN / Idade</th><th>CNS/CPF</th><th>Endereço</th><th>Área UBS?</th><th>Telefones</th><th>Data VD</th><th>Profissional</th><th>VD feita?</th><th>VD / Obs.</th></tr></thead>
+            <tbody id="patientRows"></tbody>
+          </table>
+        </div>
+        <div class="actions"><span class="result-count" id="resultCount"></span><button class="button" onclick="exportCSV()">Exportar planilha</button></div>
+      </div>
+    </section>
+    <details class="card accordion-card" style="margin-top:14px;">
+      <summary>Cadastro de rota</summary>
+      <p>Crie as rotas como aparecem na lista impressa. Depois a rota fica disponível no cadastro do paciente.</p>
+      <div class="route-form">
+        <input id="newRouteCode" placeholder="Ex.: Rota 08">
+        <input id="newRouteName" placeholder="Descrição da rota / localidade. Ex.: Horto / Ititioca">
+        <button class="button" onclick="addRoute()">Adicionar rota</button>
+      </div>
+      <p class="footer-note" id="routeNote">Rotas cadastradas: Rota 01 a Rota 07 e Fora?.</p>
+    </details>
+    <details class="card accordion-card" style="margin-top:14px;">
+      <summary>Novo caso preenchido pela equipe</summary>
+      <p>Versão digital da planilha feita à mão: a equipe registra o paciente, o problema identificado e o encaminhamento para assistência social. Ao preencher o endereço, o sistema pode conferir se cai na área da UBS.</p>
+      <div class="intake-form">
+        <input id="newName" placeholder="Nome do paciente">
+        <input id="newBirth" placeholder="Data de nascimento">
+        <input id="newDoc" placeholder="CNS ou CPF">
+        <textarea id="newPhones" placeholder="Telefones, um por linha. Ex.:&#10;(21) 99999-0000 (Rosa - filha)&#10;(21) 98888-0000 (vizinha)"></textarea>
+        <input id="newAddress" placeholder="Endereço completo">
+        <select id="newRoute"></select>
+        <select id="newPriority"><option>Alta</option><option>Média</option><option>Baixa</option></select>
+        <select id="newVisitDone"><option>Não</option><option>Tentativa</option><option>Sim</option><option>Reagendar</option></select>
+        <input id="newVisitDate" placeholder="Data da VD. Ex.: 04/06/2026">
+        <input id="newProfessional" placeholder="Profissional/equipe responsável">
+        <textarea id="newProblem" placeholder="Problema do paciente / motivo da busca ativa"></textarea>
+        <textarea id="newAssist" placeholder="Contato com assistência social / orientação / observação"></textarea>
+      </div>
+      <div class="intake-actions">
+        <button class="button" onclick="addManualCase()">Adicionar à planilha</button>
+        <span class="intake-note" id="intakeNote">Ao abrir pelo servidor interno, os dados são salvos no banco local.</span>
+      </div>
+    </details>
+    <section class="details">
+      <div class="card">
+        <h3>Atendimento selecionado</h3>
+        <p id="selectedHint">Selecione um paciente na planilha ou no mapa.</p>
+        <div class="detail-grid" id="detailGrid"></div>
+      </div>
+      <div class="card">
+        <h3>Legenda e uso interno</h3>
+        <div class="legend"><span><i class="lg-high"></i>Alta prioridade</span><span><i class="lg-med"></i>Média prioridade</span><span><i class="lg-low"></i>Baixa prioridade</span><span><b style="color:#ee7215;">P</b> Policlínica de referência</span></div>
+        <p class="footer-note">Versão para rede interna: os dados ficam no banco local do servidor configurado pela equipe.</p>
+      </div>
+    </section>
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="busca-ativa-ubs.js"></script>
+</body>
+</html>

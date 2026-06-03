@@ -147,3 +147,17 @@ data/
 ```
 
 Com isso, o protótipo deixa de ser apenas uma tela e passa a salvar dados de verdade.
+
+## Status atual
+
+Primeira base funcional iniciada:
+
+- servidor interno Node criado;
+- banco local SQLite criado em `data/busca-ativa.sqlite`;
+- API para listar rotas e pacientes;
+- API para cadastrar rota;
+- API para cadastrar paciente;
+- API para editar paciente;
+- API para marcar VD;
+- API para retirar paciente da lista;
+- tela pública em `public/` conectada ao servidor.

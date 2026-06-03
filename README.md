@@ -35,6 +35,40 @@ https://geoniteroi.maps.arcgis.com/apps/instant/lookup/index.html?appid=6b957c6c
 
 Abra o arquivo `index.html` no navegador ou publique a pasta em um servidor interno/GitHub Pages.
 
+## Como rodar a versão funcional
+
+Esta versão já possui um servidor interno com banco local.
+
+Requisitos:
+
+- Node.js 24 ou superior.
+
+Para iniciar:
+
+```bash
+npm start
+```
+
+Depois abra:
+
+```text
+http://localhost:3000
+```
+
+Em outro computador da mesma rede, use o IP do computador servidor:
+
+```text
+http://IP-DO-SERVIDOR:3000
+```
+
+O banco local fica em:
+
+```text
+data/busca-ativa.sqlite
+```
+
+Esse arquivo não deve ser enviado ao GitHub quando tiver dados reais.
+
 ## Evolução para sistema funcional
 
 O plano para transformar este protótipo em um sistema interno com banco de dados está em [`PLANO-FUNCIONAL.md`](PLANO-FUNCIONAL.md).
