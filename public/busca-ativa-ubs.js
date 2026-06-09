@@ -622,6 +622,10 @@
       if(section?.close) section.close();
       else section?.removeAttribute("open");
     }
+    function openRouteAdminFromDialog(){
+      closeNewCase();
+      switchTab("rotas");
+    }
     function switchTab(name){
       document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
       document.querySelectorAll(".tab-button").forEach(button => button.classList.toggle("active", button.dataset.tab === name));
@@ -636,6 +640,30 @@
     }
     function escapeAttr(value){
       return escapeHtml(value).replaceAll('"',"&quot;");
+    }
+    function onlyDigits(value){
+      return String(value || "").replace(/\D/g, "");
+    }
+    function formatDateInput(value){
+      const digits = onlyDigits(value).slice(0, 8);
+      if(digits.length <= 2) return digits;
+      if(digits.length <= 4) return `${digits.slice(0,2)}/${digits.slice(2)}`;
+      return `${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`;
+    }
+    function formatDocumentInput(value){
+      const digits = onlyDigits(value).slice(0, 15);
+      if(digits.length <= 11){
+        return digits
+          .replace(/^(\d{3})(\d)/, "$1.$2")
+          .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+          .replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+      }
+      return digits;
+    }
+    function bindInputMasks(){
+      const dateFields = [window.newBirth, window.newVisitDate].filter(Boolean);
+      dateFields.forEach(field => field.addEventListener("input", () => { field.value = formatDateInput(field.value); }));
+      if(window.newDoc) newDoc.addEventListener("input", () => { newDoc.value = formatDocumentInput(newDoc.value); });
     }
     function formatRemovedAt(value){
       if(!value) return "Sem data registrada";
@@ -660,6 +688,7 @@
       selectPatient,
       closeNewCase,
       openNewCase,
+      openRouteAdminFromDialog,
       switchTab,
       toggleRoute,
       updateVisitDone
@@ -670,4 +699,5 @@
       event.stopPropagation();
       toggleRoute(button.dataset.route);
     });
+    bindInputMasks();
     loadState();

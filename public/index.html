@@ -41,7 +41,6 @@
             <div class="map-search-result" id="checkResult">Digite um endereço para validar no território cinza.</div>
           </div>
           <div id="map"></div>
-          <div class="map-note"><b>Área oficial da UBS em cinza</b><br>Território publicado pela Prefeitura de Niterói. Clique em um marcador ou em uma linha da planilha para visualizar o atendimento.</div>
           <section class="selected-panel" id="atendimento">
             <h3>Paciente selecionado</h3>
             <p id="selectedHint">Selecione um paciente na planilha ou no mapa.</p>
@@ -89,8 +88,8 @@
         <p>Versão digital da planilha feita à mão: a equipe registra o paciente, o problema identificado e o encaminhamento para assistência social. Ao preencher o endereço, o sistema pode conferir se cai na área da UBS.</p>
         <div class="intake-form">
           <label class="field"><span>Nome do paciente</span><input id="newName" placeholder="Ex.: Maria de Souza"></label>
-          <label class="field"><span>Data de nascimento</span><input id="newBirth" placeholder="Ex.: 22/11/1937"></label>
-          <label class="field"><span>CNS ou CPF</span><input id="newDoc" placeholder="CNS ou CPF"></label>
+          <label class="field"><span>Data de nascimento</span><input id="newBirth" inputmode="numeric" maxlength="10" placeholder="Ex.: 22/11/1937"></label>
+          <label class="field"><span>CNS ou CPF</span><input id="newDoc" inputmode="numeric" maxlength="18" placeholder="CPF ou CNS"></label>
           <label class="field field-wide"><span>Telefones e parentesco</span><textarea id="newPhones" placeholder="Um por linha. Ex.:&#10;(21) 99999-0000 (Rosa - filha)&#10;(21) 98888-0000 (vizinha)"></textarea></label>
           <label class="field field-wide"><span>Endereço completo</span><input id="newAddress" placeholder="Rua, número, bairro"></label>
           <label class="field"><span>Rota</span><select id="newRoute"></select></label>
@@ -104,7 +103,7 @@
         <div class="intake-actions">
           <button class="button secondary" onclick="geocodeNewAddress()">Conferir endereço do cadastro</button>
           <button class="button" onclick="addManualCase()">Adicionar à planilha</button>
-          <button class="button secondary" type="button" onclick="switchTab('rotas')">Gerenciar rotas</button>
+          <button class="button secondary" type="button" onclick="openRouteAdminFromDialog()">Gerenciar rotas</button>
           <span class="intake-note" id="intakeNote">Ao abrir pelo servidor interno, os dados são salvos no banco local.</span>
         </div>
         </div>
