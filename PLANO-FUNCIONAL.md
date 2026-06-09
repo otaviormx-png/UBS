@@ -81,6 +81,13 @@ Camada usada no protótipo:
 https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0/query?where=fid%3D10&outFields=tx_nomegen%2Ctx_cnes%2Ctx_regiona%2Ctx_lograd%2Ctx_num%2Ctx_bairro%2Ctx_telefon%2Ctx_email%2Ctx_poliref&returnGeometry=true&outSR=4326&geometryPrecision=5&f=geojson
 ```
 
+Lookup oficial usado para validar endereços:
+
+```text
+https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0
+https://sig.niteroi.rj.gov.br/server/rest/services/PTG_SMS/FESAUDE_A_ATENDIMENTO_PMF_SETOR_PUBLICO/FeatureServer/0
+```
+
 Aplicativo público de referência:
 
 ```text

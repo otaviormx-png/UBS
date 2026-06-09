@@ -28,6 +28,15 @@ Camada oficial consultada:
 https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0/query?where=fid%3D10&outFields=tx_nomegen%2Ctx_cnes%2Ctx_regiona%2Ctx_lograd%2Ctx_num%2Ctx_bairro%2Ctx_telefon%2Ctx_email%2Ctx_poliref&returnGeometry=true&outSR=4326&geometryPrecision=5&f=geojson
 ```
 
+Para conferir se um endereço pertence à UBS Largo da Batalha, o sistema usa o mesmo lookup do app oficial, consultando:
+
+```text
+https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0
+https://sig.niteroi.rj.gov.br/server/rest/services/PTG_SMS/FESAUDE_A_ATENDIMENTO_PMF_SETOR_PUBLICO/FeatureServer/0
+```
+
+Ou seja: se o app oficial retornar PMF, fora da área, ou outra unidade, o sistema também considera como não pertencente à UBS Largo da Batalha.
+
 Aplicativo público de referência:
 
 ```text

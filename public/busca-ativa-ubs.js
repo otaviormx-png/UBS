@@ -22,11 +22,24 @@
     const map = L.map("map", {zoomControl:true}).setView([-22.9045,-43.0345], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"&copy; OpenStreetMap"}).addTo(map);
     const officialTerritoryUrl = "https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0/query?where=fid%3D10&outFields=tx_nomegen%2Ctx_cnes%2Ctx_regiona%2Ctx_lograd%2Ctx_num%2Ctx_bairro%2Ctx_telefon%2Ctx_email%2Ctx_poliref&returnGeometry=true&outSR=4326&geometryPrecision=5&f=geojson";
+    const officialLookupLayers = [
+      {
+        type:"UBS",
+        title:"Setor de Atendimento (UBS)",
+        url:"https://sig.niteroi.rj.gov.br/server/rest/services/Hosted/Area_UBS/FeatureServer/0"
+      },
+      {
+        type:"PMF",
+        title:"Setor de Atendimento (PMF)",
+        url:"https://sig.niteroi.rj.gov.br/server/rest/services/PTG_SMS/FESAUDE_A_ATENDIMENTO_PMF_SETOR_PUBLICO/FeatureServer/0"
+      }
+    ];
     const ubsReferencePoint = [-43.06729615695398, -22.907409581097973];
     const polyclinicReferencePoint = [-43.067258039055, -22.907730984924];
     let territoryLayer;
     let territoryGeoJSON = null;
     let checkMarker = null;
+    const officialLookupCache = new Map();
     fetch(officialTerritoryUrl)
       .then(response => response.json())
       .then(data => {
@@ -50,6 +63,8 @@
     let apiAvailable = false;
     let selectedId = null;
     let lastNewAddressPoint = null;
+    let lastNewAddressLookup = null;
+    let lastNewAddressValue = "";
     async function loadState(){
       try {
         const state = await apiRequest("/api/state");
@@ -62,6 +77,7 @@
         document.querySelector(".demo-banner").innerHTML = "<b>MODO DEMONSTRAÇÃO:</b> abra pelo servidor interno para salvar no banco local.";
       }
       render();
+      refreshOfficialAreaForPatients();
     }
     async function apiRequest(path, options={}){
       const response = await fetch(path, {
@@ -93,6 +109,24 @@
       pendingMetric.textContent=patients.filter(p=>["Pendente","Verificar"].includes(p.status)||["Não","Tentativa","Reagendar"].includes(p.visitDone)).length;
       outsideMetric.textContent=patients.filter(p=>areaText(p)==="Não").length;
       renderRoutes();
+    }
+    async function refreshOfficialAreaForPatients(){
+      if(!patients.length) return;
+      await Promise.all(patients.map(async p => {
+        const key = pointKey([p.lng,p.lat]);
+        if(officialLookupCache.has(key)){
+          p.officialLookup = officialLookupCache.get(key);
+          return;
+        }
+        try {
+          const result = await lookupOfficialSite([p.lng,p.lat]);
+          officialLookupCache.set(key, result);
+          p.officialLookup = result;
+        } catch {
+          p.officialLookup = null;
+        }
+      }));
+      render();
     }
     function syncMarkers(){
       const activeIds = new Set(patients.map(p => String(p.id)));
@@ -243,26 +277,20 @@
       const blob=new Blob(["\ufeff"+html],{type:"application/vnd.ms-excel;charset=utf-8"});
       const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="busca-ativa-ubs-largo-da-batalha-por-rotas.xls";a.click();URL.revokeObjectURL(a.href);
     }
-    function areaText(p){ if(!territoryGeoJSON) return "Aguardando mapa"; return pointAcceptedByUBS([p.lng,p.lat]) ? "Sim" : "Não"; }
+    function areaText(p){
+      if(!p.officialLookup) return "Aguardando site";
+      return p.officialLookup.isLargoDaBatalha ? "Sim" : "Não";
+    }
     function contactsText(p){ return (p.contacts || []).join(" / ") || "Não informado"; }
     function contactsHtml(p){ return `<ul class="phone-list">${(p.contacts || ["Não informado"]).map(item=>`<li>${item}</li>`).join("")}</ul>`; }
     function visitDoneSelect(p){
       return `<select class="visit-select" aria-label="VD feita" onchange="event.stopPropagation(); updateVisitDone(${p.id},this.value)"><option ${p.visitDone==="Não"?"selected":""}>Não</option><option ${p.visitDone==="Tentativa"?"selected":""}>Tentativa</option><option ${p.visitDone==="Sim"?"selected":""}>Sim</option><option ${p.visitDone==="Reagendar"?"selected":""}>Reagendar</option></select>`;
     }
     function areaPill(p){
-      if(!territoryGeoJSON) return '<span class="pill pending">Aguardando</span>';
-      const inside = pointAcceptedByUBS([p.lng,p.lat]);
-      return `<span class="pill ${inside ? "inside" : "outside"}">${inside ? "Sim" : "Não"}</span>`;
-    }
-    function pointAcceptedByUBS(point){
-      return pointInTerritory(point) || isUnitReferencePoint(point);
-    }
-    function isUnitReferencePoint(point){
-      return distanceMeters(point, ubsReferencePoint) <= 180 || distanceMeters(point, polyclinicReferencePoint) <= 180;
-    }
-    function isUnitReferenceAddress(value,candidateAddress){
-      const text = normalizeText(`${value} ${candidateAddress}`);
-      return text.includes("armando ferreira") && (text.includes("vereador") || text.includes("reverendo"));
+      if(!p.officialLookup) return '<span class="pill pending">Aguardando site</span>';
+      const inside = p.officialLookup.isLargoDaBatalha;
+      const title = p.officialLookup.matches.length ? officialLookupLabel(p.officialLookup) : "Sem resultado no Aqui tem Saúde";
+      return `<span class="pill ${inside ? "inside" : "outside"}" title="${escapeAttr(title)}">${inside ? "Sim" : "Não"}</span>`;
     }
     function normalizeText(value){
       return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
@@ -297,6 +325,47 @@
       }
       return inside;
     }
+    function pointKey(point){
+      return `${Number(point[0]).toFixed(6)},${Number(point[1]).toFixed(6)}`;
+    }
+    async function lookupOfficialSite(point){
+      const results = await Promise.all(officialLookupLayers.map(async layer => {
+        const params = new URLSearchParams({
+          f:"json",
+          geometry:`${point[0]},${point[1]}`,
+          geometryType:"esriGeometryPoint",
+          inSR:"4326",
+          spatialRel:"esriSpatialRelIntersects",
+          outFields:"*",
+          returnGeometry:"false"
+        });
+        const response = await fetch(`${layer.url}/query?${params.toString()}`);
+        const data = await response.json();
+        return (data.features || []).map(feature => ({
+          layer: layer.type,
+          title: layer.title,
+          attributes: feature.attributes || {}
+        }));
+      }));
+      const matches = results.flat();
+      return {
+        matches,
+        isLargoDaBatalha: matches.some(match => match.layer === "UBS" && isLargoDaBatalhaFeature(match.attributes))
+      };
+    }
+    function isLargoDaBatalhaFeature(attributes){
+      const text = normalizeText(`${attributes.tx_nomegen || ""} ${attributes.tx_nome || ""} ${attributes.tx_cnes || ""}`);
+      return text.includes("ubs largo da batalha") || text.includes("largo da batalha") && text.includes("4064208");
+    }
+    function officialLookupLabel(lookup){
+      if(!lookup?.matches?.length) return "Sem resultado no Aqui tem Saúde";
+      return lookup.matches.map(match => {
+        const a = match.attributes;
+        const name = a.tx_nomegen || a.tx_nome || a.tx_nomequip || "Sem nome";
+        const setor = a.tx_setor ? ` | Setor ${a.tx_setor}` : "";
+        return `${match.layer}: ${name}${setor}`;
+      }).join(" / ");
+    }
     async function geocodeAddress(value){
       const query = encodeURIComponent(`${value}, Niterói, RJ, Brasil`);
       const response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${query}&f=json&outFields=*&maxLocations=1&countryCode=BRA`);
@@ -304,21 +373,19 @@
       const candidate = data.candidates && data.candidates[0];
       if(!candidate) throw new Error("Endereço não localizado. Confira rua, número e bairro.");
       const point = [candidate.location.x, candidate.location.y];
-      const referenceAddress = isUnitReferenceAddress(value, candidate.address);
-      const referencePoint = isUnitReferencePoint(point);
-      const inside = pointInTerritory(point);
-      const accepted = inside || referenceAddress || referencePoint;
-      return { candidate, point, inside, accepted, referenceAddress, referencePoint };
+      const officialLookup = await lookupOfficialSite(point);
+      return { candidate, point, officialLookup, accepted: officialLookup.isLargoDaBatalha };
     }
     function showAddressResult(result, target){
-      const { candidate, point, inside, accepted } = result;
-      const statusText = accepted ? (inside ? "Dentro da área da UBS" : "Referência da UBS / policlínica") : "Fora da área da UBS";
-      const resultText = accepted ? (inside ? "Sim, é da área da UBS Largo da Batalha." : "Sim, é endereço de referência da UBS/policlínica.") : "Não caiu dentro da área oficial da UBS.";
+      const { candidate, point, officialLookup, accepted } = result;
+      const officialLabel = officialLookupLabel(officialLookup);
+      const statusText = accepted ? "UBS Largo da Batalha pelo Aqui tem Saúde" : "Não é UBS Largo da Batalha pelo Aqui tem Saúde";
+      const resultText = accepted ? "Sim, o Aqui tem Saúde retorna UBS Largo da Batalha." : "Não, o Aqui tem Saúde não retorna UBS Largo da Batalha para este ponto.";
       if(checkMarker) checkMarker.remove();
       checkMarker = L.marker([point[1], point[0]]).addTo(map).bindPopup(`<b>Endereço consultado</b><br>${candidate.address}<br><b>${statusText}</b>`);
       map.setView([point[1], point[0]], 16);
       checkMarker.openPopup();
-      target.innerHTML = `<b>${resultText}</b><br><small>${candidate.address}</small><br><br>${inside ? "Validado pelo território cinza oficial." : accepted ? "Validado como ponto de referência da unidade, porque o desenho do território pode ficar na borda do mapa." : "Isso substitui a conferência manual no site da Prefeitura."}`;
+      target.innerHTML = `<b>${resultText}</b><br><small>${candidate.address}</small><br><br><b>Resultado oficial:</b><br><small>${escapeHtml(officialLabel)}</small>`;
     }
     async function checkAddress(){
       const value = addressCheck.value.trim();
@@ -337,10 +404,14 @@
       try {
         const result = await geocodeAddress(value);
         lastNewAddressPoint = result.point;
+        lastNewAddressLookup = result.officialLookup;
+        lastNewAddressValue = value;
         showAddressResult(result, checkResult);
         intakeNote.textContent = result.accepted ? "Endereço conferido e ponto preparado para salvar no paciente." : "Endereço localizado, mas ficou fora da área oficial. O ponto será salvo mesmo assim para conferência.";
       } catch (error) {
         lastNewAddressPoint = null;
+        lastNewAddressLookup = null;
+        lastNewAddressValue = "";
         intakeNote.textContent = error.message || "Não foi possível conferir o endereço agora.";
       }
     }
@@ -351,11 +422,17 @@
         intakeNote.textContent = "Preencha pelo menos nome e endereço para adicionar o caso.";
         return;
       }
+      if(lastNewAddressValue !== address){
+        lastNewAddressPoint = null;
+        lastNewAddressLookup = null;
+        lastNewAddressValue = "";
+      }
+      let addressLookupResult = lastNewAddressLookup ? { point:lastNewAddressPoint, officialLookup:lastNewAddressLookup } : null;
       if(!lastNewAddressPoint){
         try {
-          const result = await geocodeAddress(address);
-          lastNewAddressPoint = result.point;
-          showAddressResult(result, checkResult);
+          addressLookupResult = await geocodeAddress(address);
+          lastNewAddressPoint = addressLookupResult.point;
+          showAddressResult(addressLookupResult, checkResult);
         } catch {
           lastNewAddressPoint = null;
         }
@@ -383,9 +460,12 @@
         lng:lastNewAddressPoint ? lastNewAddressPoint[0] : -43.0345
       };
       const savedCase = apiAvailable ? await apiRequest("/api/patients", { method:"POST", body:JSON.stringify(newCase) }) : newCase;
+      if(addressLookupResult) savedCase.officialLookup = addressLookupResult.officialLookup;
       patients.push(savedCase);
       [newName,newBirth,newDoc,newPhones,newAddress,newVisitDate,newProfessional,newProblem,newAssist].forEach(field => field.value = "");
       lastNewAddressPoint = null;
+      lastNewAddressLookup = null;
+      lastNewAddressValue = "";
       intakeNote.textContent = apiAvailable ? "Caso salvo no banco local. Use a conferência de endereço para validar a área da UBS." : "Caso adicionado nesta tela. Abra pelo servidor para salvar no banco.";
       selectedId = savedCase.id;
       render();
@@ -435,6 +515,7 @@
           const result = await geocodeAddress(p.address);
           p.lng = result.point[0];
           p.lat = result.point[1];
+          p.officialLookup = result.officialLookup;
           showAddressResult(result, checkResult);
         } catch {
           selectedHint.innerHTML=`<b>${p.name}</b> | endereço salvo, mas não foi possível atualizar o ponto no mapa`;
