@@ -26,15 +26,26 @@
     h2 { margin: 0; font-size: 22px; }
     .heading p { margin: 3px 0 0; color: var(--muted); }
     .date { color: var(--muted); font-size: 12px; }
+    .quick-nav { position: sticky; top: 0; z-index: 800; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; padding: 9px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.96); box-shadow: var(--shadow); }
+    .quick-nav button { padding: 8px 12px; border: 1px solid #cbe1e2; border-radius: 999px; color: var(--navy); background: #f5fbfa; font-weight: 700; }
+    .quick-nav button:hover { color: #fff; background: var(--teal); }
     .metrics { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 12px; margin-bottom: 14px; }
     .metric { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
     .metric span { color: var(--muted); font-size: 12px; }
     .metric strong { display: block; margin-top: 2px; color: var(--navy); font-size: 23px; }
+    .metric small { display: block; color: var(--muted); font-size: 11px; }
     .metric.orange strong { color: var(--orange); }
     .ops-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
     .ops-card p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
     .ops-actions { display: flex; align-items: center; justify-content: end; flex-wrap: wrap; gap: 8px; min-width: 360px; }
     .ops-actions select { max-width: 220px; }
+    .legend-strip { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--muted); background: #fff; box-shadow: var(--shadow); font-size: 12px; }
+    .legend-strip span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-dot { display: inline-block; width: 13px; height: 13px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+    .legend-box { display: inline-block; width: 15px; height: 11px; border-radius: 3px; }
+    .legend-box.area { border: 2px solid #59666a; background: #8d9698; opacity: .75; }
+    .legend-box.outside { background: #fde3e1; border: 1px solid #d9928e; }
+    .legend-p { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; color: #fff; background: var(--orange); font-size: 12px; }
     .workspace { display: grid; grid-template-columns: minmax(360px, 42%) 1fr; overflow: hidden; min-height: 390px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
     #map { min-height: 430px; }
     .map-side { position: relative; border-right: 1px solid var(--line); }
@@ -83,8 +94,12 @@
     .lg-high { background: #d4473f; } .lg-med { background: #e58b20; } .lg-low { background: #2a9b6c; }
     .footer-note { margin-top: 10px; color: var(--muted); font-size: 11px; }
     .workflow-list { margin: 10px 0 0; padding-left: 18px; color: var(--muted); }
-    .intake-form { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 8px; margin-top: 12px; }
-    .intake-form textarea { grid-column: span 2; min-height: 42px; resize: vertical; padding: 9px 10px; border: 1px solid #cbdcde; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; outline-color: var(--teal); }
+    .intake-form { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+    .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .field span { color: var(--navy); font-size: 12px; font-weight: 800; }
+    .field small { color: var(--muted); font-size: 11px; }
+    .field-wide { grid-column: span 2; }
+    .intake-form textarea { min-height: 58px; resize: vertical; padding: 9px 10px; border: 1px solid #cbdcde; border-radius: 7px; color: var(--ink); background: #fff; font: inherit; outline-color: var(--teal); }
     .phone-list { margin: 0; padding: 0; list-style: none; }
     .phone-list li + li { margin-top: 3px; }
     .visit-select { min-width: 98px; padding: 6px 7px; font-size: 12px; }
@@ -118,7 +133,7 @@
       .details { grid-template-columns: 1fr; }
       .map-search-row { grid-template-columns: 1fr; }
       .intake-form { grid-template-columns: 1fr; }
-      .intake-form textarea { grid-column: span 1; }
+      .field-wide { grid-column: span 1; }
       .route-form { grid-template-columns: 1fr; }
       .profile .profile-text { display: none; }
     }

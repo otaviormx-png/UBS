@@ -22,9 +22,15 @@
       <div><h2>Mapa de busca ativa</h2><p>UBS Largo da Batalha | visão integrada por paciente e microárea</p></div>
       <div class="date">Sistema interno funcional</div>
     </section>
-    <section class="metrics">
+    <nav class="quick-nav" aria-label="Navegação rápida">
+      <button type="button" onclick="scrollToSection('visao')">Visão geral</button>
+      <button type="button" onclick="scrollToSection('mapa')">Mapa e planilha</button>
+      <button type="button" onclick="openNewCase()">+ Novo paciente</button>
+      <button type="button" onclick="scrollToSection('atendimento')">Atendimento</button>
+    </nav>
+    <section class="metrics" id="visao">
       <div class="metric"><span>Pacientes monitorados</span><strong id="totalMetric">8</strong></div>
-      <div class="metric orange"><span>Prioridade alta</span><strong id="highMetric">3</strong></div>
+      <div class="metric orange"><span>Prioridade alta</span><strong id="highMetric">3</strong><small>VD mais urgente</small></div>
       <div class="metric"><span>Visitas agendadas</span><strong id="scheduledMetric">2</strong></div>
       <div class="metric"><span>Casos concluídos</span><strong id="doneMetric">1</strong></div>
     </section>
@@ -40,7 +46,15 @@
         <button class="button danger" onclick="resetDemoData()">Zerar base demo</button>
       </div>
     </section>
-    <section class="workspace">
+    <section class="legend-strip" aria-label="Legenda rápida">
+      <span><i class="legend-dot alta"></i> Alta: prioridade/VD urgente</span>
+      <span><i class="legend-dot media"></i> Média: acompanhar na rotina</span>
+      <span><i class="legend-dot baixa"></i> Baixa: acompanhamento programado</span>
+      <span><i class="legend-box area"></i> Cinza: território oficial no mapa</span>
+      <span><i class="legend-box outside"></i> Não: fora da UBS pelo Aqui tem Saúde</span>
+      <span><b class="legend-p">P</b> Policlínica de referência</span>
+    </section>
+    <section class="workspace" id="mapa">
       <div class="map-side">
         <div class="map-search">
           <h3>Conferir se o endereço é da UBS</h3>
@@ -70,7 +84,7 @@
         <div class="actions"><span class="result-count" id="resultCount"></span><button class="button" onclick="printCurrentTable()">Imprimir lista filtrada</button></div>
       </div>
     </section>
-    <details class="card accordion-card" style="margin-top:14px;">
+    <details class="card accordion-card" style="margin-top:14px;" id="rotas">
       <summary>Cadastro de rota</summary>
       <p>Crie as rotas como aparecem na lista impressa. Depois a rota fica disponível no cadastro do paciente.</p>
       <div class="route-form">
@@ -80,22 +94,22 @@
       </div>
       <p class="footer-note" id="routeNote">Rotas cadastradas: Rota 01 a Rota 07 e Fora?.</p>
     </details>
-    <details class="card accordion-card" style="margin-top:14px;">
+    <details class="card accordion-card" style="margin-top:14px;" id="novoCaso">
       <summary>Novo caso preenchido pela equipe</summary>
       <p>Versão digital da planilha feita à mão: a equipe registra o paciente, o problema identificado e o encaminhamento para assistência social. Ao preencher o endereço, o sistema pode conferir se cai na área da UBS.</p>
       <div class="intake-form">
-        <input id="newName" placeholder="Nome do paciente">
-        <input id="newBirth" placeholder="Data de nascimento">
-        <input id="newDoc" placeholder="CNS ou CPF">
-        <textarea id="newPhones" placeholder="Telefones, um por linha. Ex.:&#10;(21) 99999-0000 (Rosa - filha)&#10;(21) 98888-0000 (vizinha)"></textarea>
-        <input id="newAddress" placeholder="Endereço completo">
-        <select id="newRoute"></select>
-        <select id="newPriority"><option>Alta</option><option>Média</option><option>Baixa</option></select>
-        <select id="newVisitDone"><option>Não</option><option>Tentativa</option><option>Sim</option><option>Reagendar</option></select>
-        <input id="newVisitDate" placeholder="Data da VD. Ex.: 04/06/2026">
-        <input id="newProfessional" placeholder="Profissional/equipe responsável">
-        <textarea id="newProblem" placeholder="Problema do paciente / motivo da busca ativa"></textarea>
-        <textarea id="newAssist" placeholder="Contato com assistência social / orientação / observação"></textarea>
+        <label class="field"><span>Nome do paciente</span><input id="newName" placeholder="Ex.: Maria de Souza"></label>
+        <label class="field"><span>Data de nascimento</span><input id="newBirth" placeholder="Ex.: 22/11/1937"></label>
+        <label class="field"><span>CNS ou CPF</span><input id="newDoc" placeholder="CNS ou CPF"></label>
+        <label class="field field-wide"><span>Telefones e parentesco</span><textarea id="newPhones" placeholder="Um por linha. Ex.:&#10;(21) 99999-0000 (Rosa - filha)&#10;(21) 98888-0000 (vizinha)"></textarea></label>
+        <label class="field field-wide"><span>Endereço completo</span><input id="newAddress" placeholder="Rua, número, bairro"></label>
+        <label class="field"><span>Rota</span><select id="newRoute"></select></label>
+        <label class="field"><span>Prioridade</span><select id="newPriority"><option>Alta</option><option>Média</option><option>Baixa</option></select><small>Alta = atendimento mais urgente.</small></label>
+        <label class="field"><span>VD feita?</span><select id="newVisitDone"><option>Não</option><option>Tentativa</option><option>Sim</option><option>Reagendar</option></select></label>
+        <label class="field"><span>Data da VD</span><input id="newVisitDate" placeholder="Ex.: 04/06/2026"></label>
+        <label class="field"><span>Profissional/equipe</span><input id="newProfessional" placeholder="Responsável"></label>
+        <label class="field field-wide"><span>Problema / motivo da busca ativa</span><textarea id="newProblem" placeholder="Descreva o motivo do acompanhamento"></textarea></label>
+        <label class="field field-wide"><span>Assistência social / observação</span><textarea id="newAssist" placeholder="Contato, orientação ou observação"></textarea></label>
       </div>
       <div class="intake-actions">
         <button class="button secondary" onclick="geocodeNewAddress()">Conferir endereço do cadastro</button>
@@ -103,7 +117,7 @@
         <span class="intake-note" id="intakeNote">Ao abrir pelo servidor interno, os dados são salvos no banco local.</span>
       </div>
     </details>
-    <section class="details">
+    <section class="details" id="atendimento">
       <div class="card">
         <h3>Atendimento selecionado</h3>
         <p id="selectedHint">Selecione um paciente na planilha ou no mapa.</p>
@@ -111,7 +125,7 @@
       </div>
       <div class="card">
         <h3>Legenda e uso interno</h3>
-        <div class="legend"><span><i class="lg-high"></i>Alta prioridade</span><span><i class="lg-med"></i>Média prioridade</span><span><i class="lg-low"></i>Baixa prioridade</span><span><b style="color:#ee7215;">P</b> Policlínica de referência</span></div>
+        <div class="legend"><span><i class="lg-high"></i>Alta prioridade: VD urgente</span><span><i class="lg-med"></i>Média prioridade: rotina</span><span><i class="lg-low"></i>Baixa prioridade: programado</span><span><b style="color:#ee7215;">P</b> Policlínica de referência</span></div>
         <p class="footer-note">Versão para rede interna: os dados ficam no banco local do servidor configurado pela equipe.</p>
       </div>
     </section>

@@ -576,6 +576,15 @@
       selectedHint.textContent = "Base demo reiniciada. Selecione um paciente na planilha ou no mapa.";
       render();
     }
+    function scrollToSection(id){
+      document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+    function openNewCase(){
+      const section = document.getElementById("novoCaso");
+      if(section) section.open = true;
+      section?.scrollIntoView({behavior:"smooth", block:"start"});
+      setTimeout(() => newName?.focus(), 250);
+    }
     function selectOptions(values,selected){
       return values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
     }
@@ -599,6 +608,8 @@
       resetDemoData,
       saveSelectedChanges,
       selectPatient,
+      scrollToSection,
+      openNewCase,
       toggleRoute,
       updateVisitDone
     });
