@@ -87,6 +87,11 @@
         <input id="newRouteName" placeholder="Descrição da rota / localidade. Ex.: Horto / Ititioca">
         <button class="button" onclick="addRoute()">Adicionar rota</button>
       </div>
+      <div class="route-remove-form">
+        <label class="field"><span>Remover rota do cadastro</span><select id="removeRouteSelect"></select></label>
+        <button class="button secondary danger-soft" onclick="removeRoute()">Remover rota</button>
+      </div>
+      <p class="footer-note">Remover uma rota só tira ela da lista de rotas disponíveis. Os pacientes já cadastrados nessa rota continuam na planilha.</p>
       <p class="footer-note" id="routeNote">Rotas cadastradas: Rota 01 a Rota 07 e Fora?.</p>
     </details>
     <details class="card accordion-card" style="margin-top:14px;" id="novoCaso">

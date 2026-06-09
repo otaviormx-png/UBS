@@ -158,6 +158,12 @@ async function handleApi(req, res, url) {
     sendJson(res, 201, route);
     return;
   }
+  const routeMatch = url.pathname.match(/^\/api\/routes\/(.+)$/);
+  if (routeMatch && req.method === "DELETE") {
+    removeRoute(decodeURIComponent(routeMatch[1]));
+    sendJson(res, 200, { ok: true });
+    return;
+  }
   if (req.method === "POST" && url.pathname === "/api/patients") {
     const body = await readJson(req);
     const patient = createPatient(body);
@@ -200,6 +206,14 @@ function createRoute(body) {
   if (!code || !name) throw new HttpError(400, "Preencha código e nome da rota.");
   db.prepare("INSERT INTO routes (code, name) VALUES (?, ?)").run(code, name);
   return { code, name };
+}
+
+function removeRoute(code) {
+  const routeCode = clean(code);
+  if (!routeCode) throw new HttpError(400, "Rota inválida.");
+  const route = db.prepare("SELECT code FROM routes WHERE code = ?").get(routeCode);
+  if (!route) throw new HttpError(404, "Rota não encontrada.");
+  db.prepare("DELETE FROM routes WHERE code = ?").run(routeCode);
 }
 
 function createPatient(body) {

@@ -81,6 +81,7 @@
     .button { padding: 8px 11px; border: 0; border-radius: 7px; color: #fff; background: var(--teal); font-weight: 600; }
     .button.secondary { color: var(--teal); background: #e4f4f3; }
     .button.danger { background: #c94a43; }
+    .button.danger-soft { color: #9b2f2a; background: #fde3e1; }
     .details { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; margin-top: 14px; }
     .card { padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
     .card p { margin: 5px 0 0; color: var(--muted); }
@@ -109,13 +110,14 @@
     .intake-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .intake-note { color: var(--muted); font-size: 12px; }
     .route-form { display: grid; grid-template-columns: minmax(120px, .5fr) minmax(220px, 1fr) auto; gap: 8px; margin-top: 12px; }
+    .route-remove-form { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 8px; margin-top: 10px; }
     .accordion-card { padding: 0; overflow: hidden; }
     .accordion-card summary { display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; color: var(--navy); font-size: 16px; font-weight: 700; cursor: pointer; list-style: none; }
     .accordion-card summary::-webkit-details-marker { display: none; }
     .accordion-card summary::after { content: "+"; color: var(--teal); font-size: 20px; font-weight: 700; }
     .accordion-card[open] summary { border-bottom: 1px solid var(--line); }
     .accordion-card[open] summary::after { content: "-"; }
-    .accordion-card > p, .accordion-card > .route-form, .accordion-card > .intake-form, .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-left: 16px; margin-right: 16px; }
+    .accordion-card > p, .accordion-card > .route-form, .accordion-card > .route-remove-form, .accordion-card > .intake-form, .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-left: 16px; margin-right: 16px; }
     .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-bottom: 15px; }
     @media (max-width: 1050px) {
       .workspace { grid-template-columns: 1fr; }
@@ -133,6 +135,7 @@
       .intake-form { grid-template-columns: 1fr; }
       .field-wide { grid-column: span 1; }
       .route-form { grid-template-columns: 1fr; }
+      .route-remove-form { grid-template-columns: 1fr; }
       .profile .profile-text { display: none; }
     }
     @media print {

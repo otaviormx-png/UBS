@@ -199,6 +199,11 @@
         printRouteSelect.innerHTML = `<option value="">Todas as rotas filtradas</option>${routes.map(route => `<option value="${route.code}">${route.code} - ${route.name}</option>`).join("")}`;
         if([...printRouteSelect.options].some(option => option.value === printSelected)) printRouteSelect.value = printSelected;
       }
+      if(window.removeRouteSelect){
+        const removeSelected = removeRouteSelect.value;
+        removeRouteSelect.innerHTML = routes.map(route => `<option value="${route.code}">${route.code} - ${route.name}</option>`).join("");
+        if([...removeRouteSelect.options].some(option => option.value === removeSelected)) removeRouteSelect.value = removeSelected;
+      }
       routeNote.textContent = `Rotas cadastradas: ${routes.map(route => route.code).join(", ")}.`;
     }
     async function addRoute(){
@@ -216,6 +221,19 @@
       routeNote.textContent = `${code} cadastrada.`;
       renderRoutes();
       newRoute.value = code;
+    }
+    async function removeRoute(){
+      const code = removeRouteSelect.value;
+      const route = routes.find(item => item.code === code);
+      if(!route){ routeNote.textContent = "Selecione uma rota para remover."; return; }
+      const patientsInRoute = patients.filter(patient => patient.route === code).length;
+      const detail = patientsInRoute ? ` Existem ${patientsInRoute} paciente${patientsInRoute === 1 ? "" : "s"} nessa rota; eles continuarão na planilha.` : "";
+      if(!confirm(`Remover ${route.code} - ${route.name} do cadastro de rotas?${detail}`)) return;
+      if(apiAvailable) await apiRequest(`/api/routes/${encodeURIComponent(code)}`, { method:"DELETE" });
+      routes = routes.filter(item => item.code !== code);
+      expandedRoutes.delete(code);
+      routeNote.textContent = `${code} removida do cadastro. Pacientes existentes foram mantidos.`;
+      render();
     }
     function exportCSV(){
       const list = filteredPatients();
@@ -586,6 +604,7 @@
       printCurrentTable,
       printSelectedRoute,
       removePatient,
+      removeRoute,
       render,
       resetFilters,
       saveSelectedChanges,
