@@ -49,6 +49,12 @@ Para iniciar:
 npm start
 ```
 
+No Windows, tambem pode dar dois cliques em:
+
+```text
+iniciar-busca-ativa.bat
+```
+
 Depois abra:
 
 ```text
@@ -58,8 +64,10 @@ http://localhost:3000
 Em outro computador da mesma rede, use o IP do computador servidor:
 
 ```text
-http://IP-DO-SERVIDOR:3000
+http://192.168.200.175:3000
 ```
+
+Se outro computador da rede nao abrir, clique com o botao direito em `liberar-firewall-admin.bat` e escolha **Executar como administrador**.
 
 O banco local fica em:
 
@@ -68,6 +76,16 @@ data/busca-ativa.sqlite
 ```
 
 Esse arquivo não deve ser enviado ao GitHub quando tiver dados reais.
+
+## Backup do banco
+
+Para criar uma copia manual do banco, execute:
+
+```text
+backup-banco.bat
+```
+
+Os backups ficam na pasta `backups/`, que tambem nao deve ser enviada ao GitHub.
 
 ## Evolução para sistema funcional
 
