@@ -110,8 +110,8 @@
       highMetric.textContent=patients.filter(p=>p.priority==="Alta").length;
       scheduledMetric.textContent=patients.filter(p=>p.status==="Visita agendada").length;
       doneMetric.textContent=patients.filter(p=>p.status==="Concluído").length;
-      pendingMetric.textContent=patients.filter(p=>["Pendente","Verificar"].includes(p.status)||["Não","Tentativa","Reagendar"].includes(p.visitDone)).length;
-      outsideMetric.textContent=patients.filter(p=>areaText(p)==="Não").length;
+      if(window.pendingMetric) pendingMetric.textContent=patients.filter(p=>["Pendente","Verificar"].includes(p.status)||["Não","Tentativa","Reagendar"].includes(p.visitDone)).length;
+      if(window.outsideMetric) outsideMetric.textContent=patients.filter(p=>areaText(p)==="Não").length;
       renderRoutes();
       renderHistory();
     }
@@ -610,10 +610,16 @@
       window.print();
     }
     function openNewCase(){
+      switchTab("principal");
       const section = document.getElementById("novoCaso");
-      if(section) section.open = true;
       section?.scrollIntoView({behavior:"smooth", block:"start"});
       setTimeout(() => newName?.focus(), 250);
+    }
+    function switchTab(name){
+      document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
+      document.querySelectorAll(".tab-button").forEach(button => button.classList.toggle("active", button.dataset.tab === name));
+      if(name === "principal") setTimeout(() => map.invalidateSize(), 80);
+      window.scrollTo({top:0, behavior:"smooth"});
     }
     function selectOptions(values,selected){
       return values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
@@ -646,6 +652,7 @@
       saveSelectedChanges,
       selectPatient,
       openNewCase,
+      switchTab,
       toggleRoute,
       updateVisitDone
     });
