@@ -133,6 +133,14 @@ resetar-base-demo.bat
 Esse comando apaga a base atual e recria os pacientes ficticios de demonstracao. Use apenas em teste.
 Ele tenta reiniciar pelo servidor aberto; se o servidor estiver fechado, reinicia direto no banco local e abre a pagina novamente.
 
+Para limpar o banco e comecar do zero, sem voltar a base demo, use:
+
+```text
+zerar-banco-vazio.bat
+```
+
+Esse comando apaga pacientes, historico e rotas. Depois disso, o sistema fica com 0 registros ate a equipe cadastrar rotas e pacientes reais.
+
 ## Evolução para sistema funcional
 
 O plano para transformar este protótipo em um sistema interno com banco de dados está em [`PLANO-FUNCIONAL.md`](PLANO-FUNCIONAL.md).

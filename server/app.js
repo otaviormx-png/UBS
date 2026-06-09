@@ -21,6 +21,10 @@ db.exec(`
     name TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
   CREATE TABLE IF NOT EXISTS patients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     route TEXT NOT NULL,
@@ -71,6 +75,7 @@ server.listen(port, host, () => {
 });
 
 function seedDatabase() {
+  if (getSetting("disable_demo_seed") === "1") return;
   const routeCount = db.prepare("SELECT COUNT(*) AS total FROM routes").get().total;
   const patientCount = db.prepare("SELECT COUNT(*) AS total FROM patients").get().total;
   if (routeCount === 0) {
@@ -110,6 +115,7 @@ function resetDemoDatabase() {
   db.exec("BEGIN");
   try {
     db.exec("DELETE FROM patients; DELETE FROM routes; DELETE FROM sqlite_sequence WHERE name = 'patients';");
+    setSetting("disable_demo_seed", "0");
     const insertRoute = db.prepare("INSERT INTO routes (code, name) VALUES (?, ?)");
     seedRoutes.forEach(route => insertRoute.run(route.code, route.name));
     const insertPatient = db.prepare(`
@@ -144,6 +150,18 @@ function resetDemoDatabase() {
   }
 }
 
+function clearDatabase() {
+  db.exec("BEGIN");
+  try {
+    db.exec("DELETE FROM patients; DELETE FROM routes; DELETE FROM sqlite_sequence WHERE name = 'patients';");
+    setSetting("disable_demo_seed", "1");
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
     sendJson(res, 200, { routes: listRoutes(), patients: listPatients(), history: listRemovedPatients() });
@@ -151,6 +169,11 @@ async function handleApi(req, res, url) {
   }
   if (req.method === "POST" && url.pathname === "/api/reset-demo") {
     resetDemoDatabase();
+    sendJson(res, 200, { routes: listRoutes(), patients: listPatients(), history: listRemovedPatients() });
+    return;
+  }
+  if (req.method === "POST" && url.pathname === "/api/clear-database") {
+    clearDatabase();
     sendJson(res, 200, { routes: listRoutes(), patients: listPatients(), history: listRemovedPatients() });
     return;
   }
@@ -360,6 +383,19 @@ function ensureColumn(table, column, definition) {
   if (!exists) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
 
+function getSetting(key) {
+  const row = db.prepare("SELECT value FROM app_settings WHERE key = ?").get(key);
+  return row ? row.value : null;
+}
+
+function setSetting(key, value) {
+  db.prepare(`
+    INSERT INTO app_settings (key, value)
+    VALUES (?, ?)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `).run(key, value);
+}
+
 function parseContacts(value) {
   try {
     const contacts = JSON.parse(value || "[]");
@@ -383,7 +419,10 @@ function serveStatic(req, res, url) {
       sendText(res, 404, "Arquivo não encontrado.");
       return;
     }
-    res.writeHead(200, { "Content-Type": contentType(fullPath) });
+    res.writeHead(200, {
+      "Content-Type": contentType(fullPath),
+      "Cache-Control": "no-store"
+    });
     res.end(content);
   });
 }
@@ -422,7 +461,10 @@ function readJson(req) {
 }
 
 function sendJson(res, status, body) {
-  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.writeHead(status, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store"
+  });
   res.end(JSON.stringify(body));
 }
 

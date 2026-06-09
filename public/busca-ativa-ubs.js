@@ -76,7 +76,9 @@
         document.querySelector(".demo-banner").innerHTML = "<b>SISTEMA INTERNO:</b> alterações salvas no banco local deste servidor.";
       } catch {
         apiAvailable = false;
-        document.querySelector(".demo-banner").innerHTML = "<b>MODO DEMONSTRAÇÃO:</b> abra pelo servidor interno para salvar no banco local.";
+        patients = [];
+        patientHistory = [];
+        document.querySelector(".demo-banner").innerHTML = "<b>SEM CONEXÃO COM O SERVIDOR:</b> esta tela não carregou o banco real. Reabra pelo endereço da rede ou atualize com Ctrl+F5.";
       }
       render();
       refreshOfficialAreaForPatients();

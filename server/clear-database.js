@@ -1,7 +1,6 @@
 const { DatabaseSync } = require("node:sqlite");
 const fs = require("node:fs");
 const path = require("node:path");
-const { routes, patients } = require("./seed-data");
 
 const rootDir = path.join(__dirname, "..");
 const dataDir = path.join(rootDir, "data");
@@ -52,42 +51,12 @@ ensureColumn("patients", "removed_at", "TEXT");
 db.exec("BEGIN");
 try {
   db.exec("DELETE FROM patients; DELETE FROM routes; DELETE FROM sqlite_sequence WHERE name = 'patients';");
-  setSetting("disable_demo_seed", "0");
-
-  const insertRoute = db.prepare("INSERT INTO routes (code, name) VALUES (?, ?)");
-  routes.forEach(route => insertRoute.run(route.code, route.name));
-
-  const insertPatient = db.prepare(`
-    INSERT INTO patients
-      (route, name, birth, age, doc, contacts, address, area, reason, visit, visit_date, professional, visit_done, priority, status, last, lat, lng)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-  patients.forEach(patient => insertPatient.run(
-    patient.route,
-    patient.name,
-    patient.birth,
-    String(patient.age ?? ""),
-    patient.doc,
-    JSON.stringify(patient.contacts || []),
-    patient.address,
-    patient.area,
-    patient.reason,
-    patient.visit,
-    patient.visitDate,
-    patient.professional,
-    patient.visitDone,
-    patient.priority,
-    patient.status,
-    patient.last,
-    patient.lat,
-    patient.lng
-  ));
-
+  setSetting("disable_demo_seed", "1");
   db.exec("COMMIT");
-  console.log(`Base demo reiniciada: ${routes.length} rotas e ${patients.length} pacientes.`);
+  console.log("Banco limpo: 0 rotas e 0 pacientes. A base demo nao sera recriada automaticamente.");
 } catch (error) {
   db.exec("ROLLBACK");
-  console.error("Falha ao reiniciar base demo:", error.message);
+  console.error("Falha ao limpar banco:", error.message);
   process.exitCode = 1;
 } finally {
   db.close();
