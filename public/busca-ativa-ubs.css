@@ -111,13 +111,18 @@
     .intake-note { color: var(--muted); font-size: 12px; }
     .route-form { display: grid; grid-template-columns: minmax(120px, .5fr) minmax(220px, 1fr) auto; gap: 8px; margin-top: 12px; }
     .route-remove-form { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 8px; margin-top: 10px; }
+    .history-card th { background: #4f6870; }
+    .history-scroll { max-height: 260px; overflow: auto; border-top: 1px solid var(--line); }
+    .history-scroll td { white-space: normal; }
+    .history-scroll small { color: var(--muted); }
+    .empty-history { color: var(--muted); text-align: center; }
     .accordion-card { padding: 0; overflow: hidden; }
     .accordion-card summary { display: flex; align-items: center; justify-content: space-between; padding: 15px 16px; color: var(--navy); font-size: 16px; font-weight: 700; cursor: pointer; list-style: none; }
     .accordion-card summary::-webkit-details-marker { display: none; }
     .accordion-card summary::after { content: "+"; color: var(--teal); font-size: 20px; font-weight: 700; }
     .accordion-card[open] summary { border-bottom: 1px solid var(--line); }
     .accordion-card[open] summary::after { content: "-"; }
-    .accordion-card > p, .accordion-card > .route-form, .accordion-card > .route-remove-form, .accordion-card > .intake-form, .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-left: 16px; margin-right: 16px; }
+    .accordion-card > p, .accordion-card > .route-form, .accordion-card > .route-remove-form, .accordion-card > .history-scroll, .accordion-card > .intake-form, .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-left: 16px; margin-right: 16px; }
     .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-bottom: 15px; }
     @media (max-width: 1050px) {
       .workspace { grid-template-columns: 1fr; }

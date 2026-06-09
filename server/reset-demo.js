@@ -38,10 +38,12 @@ db.exec(`
     lat REAL,
     lng REAL,
     removed INTEGER NOT NULL DEFAULT 0,
+    removed_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 `);
+ensureColumn("patients", "removed_at", "TEXT");
 
 db.exec("BEGIN");
 try {
@@ -84,4 +86,9 @@ try {
   process.exitCode = 1;
 } finally {
   db.close();
+}
+
+function ensureColumn(table, column, definition) {
+  const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(item => item.name === column);
+  if (!exists) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }

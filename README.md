@@ -11,6 +11,7 @@ Protótipo de sistema interno para acompanhamento de busca ativa da UBS Largo da
 - Cadastro manual de rotas e casos.
 - Edição de paciente com botão explícito de salvar.
 - Remoção de paciente da lista.
+- Histórico de pacientes retirados da planilha, com data/hora da retirada.
 - Exportação de planilha `.xls` organizada por rota.
 - Impressão da lista filtrada ou de uma rota específica.
 - Geocodificação do endereço para posicionar o paciente no mapa.

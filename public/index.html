@@ -79,6 +79,17 @@
         <div class="actions"><span class="result-count" id="resultCount"></span><button class="button" onclick="printCurrentTable()">Imprimir lista filtrada</button></div>
       </div>
     </section>
+    <details class="card accordion-card history-card" style="margin-top:14px;" id="historico">
+      <summary>Histórico de pacientes retirados da planilha</summary>
+      <p>Pacientes que saíram da lista ativa ficam registrados aqui com a data de retirada.</p>
+      <div class="history-scroll">
+        <table>
+          <thead><tr><th>Paciente</th><th>Rota</th><th>Endereço</th><th>Motivo / observação</th><th>Status</th><th>Retirado em</th></tr></thead>
+          <tbody id="historyRows"></tbody>
+        </table>
+      </div>
+      <p class="footer-note" id="historyNote">Nenhum paciente retirado até agora.</p>
+    </details>
     <details class="card accordion-card" style="margin-top:14px;" id="rotas">
       <summary>Cadastro de rota</summary>
       <p>Crie as rotas como aparecem na lista impressa. Depois a rota fica disponível no cadastro do paciente.</p>

@@ -42,10 +42,12 @@ db.exec(`
     lat REAL,
     lng REAL,
     removed INTEGER NOT NULL DEFAULT 0,
+    removed_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 `);
+ensureColumn("patients", "removed_at", "TEXT");
 
 seedDatabase();
 
@@ -144,12 +146,12 @@ function resetDemoDatabase() {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
-    sendJson(res, 200, { routes: listRoutes(), patients: listPatients() });
+    sendJson(res, 200, { routes: listRoutes(), patients: listPatients(), history: listRemovedPatients() });
     return;
   }
   if (req.method === "POST" && url.pathname === "/api/reset-demo") {
     resetDemoDatabase();
-    sendJson(res, 200, { routes: listRoutes(), patients: listPatients() });
+    sendJson(res, 200, { routes: listRoutes(), patients: listPatients(), history: listRemovedPatients() });
     return;
   }
   if (req.method === "POST" && url.pathname === "/api/routes") {
@@ -178,8 +180,8 @@ async function handleApi(req, res, url) {
     return;
   }
   if (patientMatch && req.method === "DELETE") {
-    removePatient(Number(patientMatch[1]));
-    sendJson(res, 200, { ok: true });
+    const patient = removePatient(Number(patientMatch[1]));
+    sendJson(res, 200, { ok: true, patient });
     return;
   }
   const visitMatch = url.pathname.match(/^\/api\/patients\/(\d+)\/visit$/);
@@ -198,6 +200,14 @@ function listRoutes() {
 
 function listPatients() {
   return db.prepare("SELECT * FROM patients WHERE removed = 0 ORDER BY id").all().map(rowToPatient);
+}
+
+function listRemovedPatients() {
+  return db.prepare(`
+    SELECT * FROM patients
+    WHERE removed = 1
+    ORDER BY COALESCE(removed_at, updated_at) DESC, id DESC
+  `).all().map(rowToPatient);
 }
 
 function createRoute(body) {
@@ -287,7 +297,9 @@ function updateVisitDone(id, visitDone) {
 
 function removePatient(id) {
   if (!getPatient(id)) throw new HttpError(404, "Paciente não encontrado.");
-  db.prepare("UPDATE patients SET removed = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  db.prepare("UPDATE patients SET removed = 1, removed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  const row = db.prepare("SELECT * FROM patients WHERE id = ?").get(id);
+  return rowToPatient(row);
 }
 
 function getPatient(id) {
@@ -337,9 +349,15 @@ function rowToPatient(row) {
     priority: row.priority,
     status: row.status,
     last: row.last,
+    removedAt: row.removed_at,
     lat: row.lat,
     lng: row.lng
   };
+}
+
+function ensureColumn(table, column, definition) {
+  const exists = db.prepare(`PRAGMA table_info(${table})`).all().some(item => item.name === column);
+  if (!exists) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
 
 function parseContacts(value) {

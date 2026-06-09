@@ -18,6 +18,7 @@
       {id:7,route:"Rota 07",name:"Renata Costa",birth:"18/04/1940",age:85,doc:"068.843.007-22",contacts:["(21) 99911-0007","(21) 98997-7295"],address:"Capim Melado, 34",area:"02",reason:"HAS / acamado",visit:"Sem registro recente",visitDate:"05/06/2026",professional:"ACS Kátia",visitDone:"Tentativa",priority:"Média",status:"Contato realizado",last:"29/05/2026",lat:-22.8969,lng:-43.0354},
       {id:8,route:"Fora?",name:"Antônio Ribeiro",birth:"12/06/1939",age:86,doc:"917.354.477-34",contacts:["(21) 99911-0008 (cuidadora)"],address:"Rua Prefeito Silvio Picanço, 50",area:"-",reason:"Conferir território",visit:"Assistência social acionada; endereço pode ser fora da UBS",visitDate:"A definir",professional:"Assistência social",visitDone:"Não",priority:"Baixa",status:"Verificar",last:"27/05/2026",lat:-22.9188,lng:-43.0825}
     ];
+    let patientHistory = [];
     const expandedRoutes = new Set(["Rota 01"]);
     const map = L.map("map", {zoomControl:true}).setView([-22.9045,-43.0345], 14);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:19, attribution:"&copy; OpenStreetMap"}).addTo(map);
@@ -70,6 +71,7 @@
         const state = await apiRequest("/api/state");
         routes = state.routes;
         patients = state.patients;
+        patientHistory = state.history || [];
         apiAvailable = true;
         document.querySelector(".demo-banner").innerHTML = "<b>SISTEMA INTERNO:</b> alterações salvas no banco local deste servidor.";
       } catch {
@@ -109,6 +111,7 @@
       pendingMetric.textContent=patients.filter(p=>["Pendente","Verificar"].includes(p.status)||["Não","Tentativa","Reagendar"].includes(p.visitDone)).length;
       outsideMetric.textContent=patients.filter(p=>areaText(p)==="Não").length;
       renderRoutes();
+      renderHistory();
     }
     async function refreshOfficialAreaForPatients(){
       if(!patients.length) return;
@@ -174,9 +177,14 @@
       const patient = patients.find(p=>p.id===id);
       if(!patient) return;
       if(!confirm(`Retirar ${patient.name} da lista de busca ativa?`)) return;
-      if(apiAvailable) await apiRequest(`/api/patients/${id}`, { method:"DELETE" });
+      let removedPatient = {...patient, removedAt:new Date().toISOString()};
+      if(apiAvailable){
+        const response = await apiRequest(`/api/patients/${id}`, { method:"DELETE" });
+        removedPatient = response.patient || removedPatient;
+      }
       const index = patients.findIndex(p=>p.id===id);
       patients.splice(index,1);
+      patientHistory = [removedPatient, ...patientHistory.filter(item => item.id !== id)];
       if(markers[id]){ markers[id].remove(); delete markers[id]; }
       selectedId = null;
       selectedHint.textContent = "Paciente retirado da lista. Selecione outro atendimento.";
@@ -205,6 +213,25 @@
         if([...removeRouteSelect.options].some(option => option.value === removeSelected)) removeRouteSelect.value = removeSelected;
       }
       routeNote.textContent = `Rotas cadastradas: ${routes.map(route => route.code).join(", ")}.`;
+    }
+    function renderHistory(){
+      if(!window.historyRows) return;
+      if(!patientHistory.length){
+        historyRows.innerHTML = `<tr><td colspan="6" class="empty-history">Nenhum paciente retirado da planilha até agora.</td></tr>`;
+        historyNote.textContent = "Nenhum paciente retirado até agora.";
+        return;
+      }
+      historyRows.innerHTML = patientHistory.map(p => `
+        <tr>
+          <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.doc || "Sem documento")}</small></td>
+          <td>${escapeHtml(p.route)}</td>
+          <td>${escapeHtml(p.address)}</td>
+          <td>${escapeHtml(p.reason || "-")}<br><small>${escapeHtml(p.visit || "")}</small></td>
+          <td>${escapeHtml(p.status || "-")}<br><small>VD: ${escapeHtml(p.visitDone || "-")}</small></td>
+          <td>${formatRemovedAt(p.removedAt)}</td>
+        </tr>
+      `).join("");
+      historyNote.textContent = `${patientHistory.length} paciente${patientHistory.length === 1 ? "" : "s"} no histórico de retirados.`;
     }
     async function addRoute(){
       const code = newRouteCode.value.trim();
@@ -594,6 +621,13 @@
     }
     function escapeAttr(value){
       return escapeHtml(value).replaceAll('"',"&quot;");
+    }
+    function formatRemovedAt(value){
+      if(!value) return "Sem data registrada";
+      const normalized = String(value).includes("T") ? value : String(value).replace(" ", "T") + "Z";
+      const date = new Date(normalized);
+      if(Number.isNaN(date.getTime())) return escapeHtml(value);
+      return date.toLocaleString("pt-BR", {dateStyle:"short", timeStyle:"short"});
     }
     Object.assign(window, {
       addManualCase,
