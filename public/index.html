@@ -22,12 +22,6 @@
       <div><h2>Mapa de busca ativa</h2><p>UBS Largo da Batalha | visão integrada por paciente e microárea</p></div>
       <div class="date">Sistema interno funcional</div>
     </section>
-    <nav class="quick-nav" aria-label="Navegação rápida">
-      <button type="button" onclick="scrollToSection('visao')">Visão geral</button>
-      <button type="button" onclick="scrollToSection('mapa')">Mapa e planilha</button>
-      <button type="button" onclick="openNewCase()">+ Novo paciente</button>
-      <button type="button" onclick="scrollToSection('atendimento')">Atendimento</button>
-    </nav>
     <section class="metrics" id="visao">
       <div class="metric"><span>Pacientes monitorados</span><strong id="totalMetric">8</strong></div>
       <div class="metric orange"><span>Prioridade alta</span><strong id="highMetric">3</strong><small>VD mais urgente</small></div>
@@ -36,22 +30,23 @@
     </section>
     <section class="ops-card">
       <div>
-        <h3>Operação do dia</h3>
+        <h3>Ações da rotina</h3>
         <p><b id="pendingMetric">0</b> pendentes/tentativas/reagendamentos · <b id="outsideMetric">0</b> fora da área ou a conferir</p>
       </div>
       <div class="ops-actions">
+        <button class="button" onclick="openNewCase()">+ Novo paciente</button>
         <select id="printRouteSelect" aria-label="Rota para impressão"></select>
         <button class="button secondary" onclick="printSelectedRoute()">Imprimir rota</button>
         <button class="button secondary" onclick="exportCSV()">Exportar planilha</button>
-        <button class="button danger" onclick="resetDemoData()">Zerar base demo</button>
       </div>
     </section>
     <section class="legend-strip" aria-label="Legenda rápida">
+      <strong>Como ler:</strong>
       <span><i class="legend-dot alta"></i> Alta: prioridade/VD urgente</span>
       <span><i class="legend-dot media"></i> Média: acompanhar na rotina</span>
       <span><i class="legend-dot baixa"></i> Baixa: acompanhamento programado</span>
-      <span><i class="legend-box area"></i> Cinza: território oficial no mapa</span>
-      <span><i class="legend-box outside"></i> Não: fora da UBS pelo Aqui tem Saúde</span>
+      <span><i class="legend-box area"></i> Área cinza: território oficial no mapa</span>
+      <span><i class="legend-box outside"></i> “Não”: fora da UBS pelo Aqui tem Saúde</span>
       <span><b class="legend-p">P</b> Policlínica de referência</span>
     </section>
     <section class="workspace" id="mapa">

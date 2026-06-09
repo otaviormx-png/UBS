@@ -122,7 +122,14 @@ Na tela principal:
 - `Imprimir rota`: escolhe uma rota e abre a impressão só daquela lista.
 - `Imprimir lista filtrada`: imprime o que estiver aparecendo na planilha.
 - `Conferir endereço do cadastro`: busca o endereço do paciente novo e prepara o ponto no mapa antes de salvar.
-- `Zerar base demo`: apaga a base atual e recria os pacientes fictícios de demonstração. Use apenas em teste.
+
+Para zerar a base ficticia de treinamento, use fora da tela:
+
+```text
+resetar-base-demo.bat
+```
+
+Esse comando apaga a base atual e recria os pacientes ficticios de demonstracao. Use apenas em teste.
 
 ## Evolução para sistema funcional
 

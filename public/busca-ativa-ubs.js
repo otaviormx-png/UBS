@@ -562,23 +562,6 @@
       render();
       window.print();
     }
-    async function resetDemoData(){
-      if(!apiAvailable){
-        alert("Abra pelo servidor interno para reiniciar a base demo.");
-        return;
-      }
-      if(!confirm("Zerar a base atual e voltar para os dados fictícios de demonstração? Use isso só em teste/treinamento.")) return;
-      const state = await apiRequest("/api/reset-demo", { method:"POST", body:"{}" });
-      routes = state.routes;
-      patients = state.patients;
-      selectedId = null;
-      detailGrid.innerHTML = "";
-      selectedHint.textContent = "Base demo reiniciada. Selecione um paciente na planilha ou no mapa.";
-      render();
-    }
-    function scrollToSection(id){
-      document.getElementById(id)?.scrollIntoView({behavior:"smooth", block:"start"});
-    }
     function openNewCase(){
       const section = document.getElementById("novoCaso");
       if(section) section.open = true;
@@ -605,10 +588,8 @@
       removePatient,
       render,
       resetFilters,
-      resetDemoData,
       saveSelectedChanges,
       selectPatient,
-      scrollToSection,
       openNewCase,
       toggleRoute,
       updateVisitDone
