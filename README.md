@@ -130,6 +130,7 @@ resetar-base-demo.bat
 ```
 
 Esse comando apaga a base atual e recria os pacientes ficticios de demonstracao. Use apenas em teste.
+Ele tenta reiniciar pelo servidor aberto; se o servidor estiver fechado, reinicia direto no banco local e abre a pagina novamente.
 
 ## Evolução para sistema funcional
 
