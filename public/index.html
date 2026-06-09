@@ -54,7 +54,10 @@
               <h3>Planilha interativa de pacientes</h3>
               <p><b id="totalMetric">0</b> pacientes · <b id="highMetric">0</b> alta prioridade · <b id="scheduledMetric">0</b> visitas agendadas · <b id="doneMetric">0</b> concluídos</p>
             </div>
-            <button class="button secondary" onclick="resetFilters()">Limpar filtros</button>
+            <div class="panel-actions">
+              <button class="button" onclick="openNewCase()">+ Novo paciente</button>
+              <button class="button secondary" onclick="resetFilters()">Limpar filtros</button>
+            </div>
           </div>
           <div class="filters">
             <input id="search" placeholder="Buscar paciente, rua ou motivo..." oninput="render()">

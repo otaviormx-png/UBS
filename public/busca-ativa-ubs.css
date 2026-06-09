@@ -66,6 +66,7 @@
     .table-side { min-width: 0; }
     .panel-title { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 7px; }
     .panel-title p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .panel-actions { display: flex; align-items: center; justify-content: end; gap: 8px; }
     .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
     h3 { margin: 0; color: var(--navy); font-size: 16px; }
     .filters { display: grid; grid-template-columns: minmax(150px, 1.5fr) repeat(3, minmax(110px, 1fr)); gap: 7px; padding: 6px 16px 12px; }
@@ -143,6 +144,8 @@
       .workspace { grid-template-columns: 1fr; }
       .ops-card { align-items: stretch; flex-direction: column; }
       .ops-actions { justify-content: start; min-width: 0; }
+      .panel-title { align-items: stretch; flex-direction: column; gap: 10px; }
+      .panel-actions { justify-content: start; }
       .actions { align-items: stretch; flex-direction: column; }
       .table-actions { justify-content: start; }
       .map-side { border-right: 0; border-bottom: 1px solid var(--line); }
