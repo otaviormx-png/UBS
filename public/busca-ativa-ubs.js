@@ -516,6 +516,7 @@
       intakeNote.textContent = apiAvailable ? "Caso salvo no banco local. Use a conferência de endereço para validar a área da UBS." : "Caso adicionado nesta tela. Abra pelo servidor para salvar no banco.";
       selectedId = savedCase.id;
       render();
+      closeNewCase();
       selectPatient(savedCase.id,false);
     }
     function parseContacts(value){
@@ -612,8 +613,14 @@
     function openNewCase(){
       switchTab("principal");
       const section = document.getElementById("novoCaso");
-      section?.scrollIntoView({behavior:"smooth", block:"start"});
+      if(section?.showModal) section.showModal();
+      else section?.setAttribute("open", "open");
       setTimeout(() => newName?.focus(), 250);
+    }
+    function closeNewCase(){
+      const section = document.getElementById("novoCaso");
+      if(section?.close) section.close();
+      else section?.removeAttribute("open");
     }
     function switchTab(name){
       document.querySelectorAll(".tab-panel").forEach(panel => panel.classList.toggle("active", panel.id === `tab-${name}`));
@@ -651,6 +658,7 @@
       resetFilters,
       saveSelectedChanges,
       selectPatient,
+      closeNewCase,
       openNewCase,
       switchTab,
       toggleRoute,

@@ -42,6 +42,11 @@
           </div>
           <div id="map"></div>
           <div class="map-note"><b>Área oficial da UBS em cinza</b><br>Território publicado pela Prefeitura de Niterói. Clique em um marcador ou em uma linha da planilha para visualizar o atendimento.</div>
+          <section class="selected-panel" id="atendimento">
+            <h3>Paciente selecionado</h3>
+            <p id="selectedHint">Selecione um paciente na planilha ou no mapa.</p>
+            <div class="detail-grid" id="detailGrid"></div>
+          </section>
         </div>
         <div class="table-side">
           <div class="panel-title">
@@ -75,8 +80,9 @@
         </div>
       </section>
 
-      <section class="card intake-card" style="margin-top:14px;" id="novoCaso">
-        <div class="section-title"><h3>Novo caso preenchido pela equipe</h3><button class="button secondary" onclick="switchTab('rotas')">Gerenciar rotas</button></div>
+      <dialog class="patient-dialog" id="novoCaso">
+        <div class="dialog-card">
+          <div class="section-title"><h3>Novo caso preenchido pela equipe</h3><button class="button secondary" type="button" onclick="closeNewCase()">Fechar</button></div>
         <p>Versão digital da planilha feita à mão: a equipe registra o paciente, o problema identificado e o encaminhamento para assistência social. Ao preencher o endereço, o sistema pode conferir se cai na área da UBS.</p>
         <div class="intake-form">
           <label class="field"><span>Nome do paciente</span><input id="newName" placeholder="Ex.: Maria de Souza"></label>
@@ -95,22 +101,11 @@
         <div class="intake-actions">
           <button class="button secondary" onclick="geocodeNewAddress()">Conferir endereço do cadastro</button>
           <button class="button" onclick="addManualCase()">Adicionar à planilha</button>
+          <button class="button secondary" type="button" onclick="switchTab('rotas')">Gerenciar rotas</button>
           <span class="intake-note" id="intakeNote">Ao abrir pelo servidor interno, os dados são salvos no banco local.</span>
         </div>
-      </section>
-
-      <section class="details" id="atendimento">
-        <div class="card">
-          <h3>Atendimento selecionado</h3>
-          <p id="selectedHint">Selecione um paciente na planilha ou no mapa.</p>
-          <div class="detail-grid" id="detailGrid"></div>
         </div>
-        <div class="card">
-          <h3>Legenda e uso interno</h3>
-          <div class="legend"><span><i class="lg-high"></i>Alta prioridade: VD urgente</span><span><i class="lg-med"></i>Média prioridade: rotina</span><span><i class="lg-low"></i>Baixa prioridade: programado</span><span><b style="color:#ee7215;">P</b> Policlínica de referência</span></div>
-          <p class="footer-note">Versão para rede interna: os dados ficam no banco local do servidor configurado pela equipe.</p>
-        </div>
-      </section>
+      </dialog>
     </section>
 
     <section class="tab-panel" id="tab-rotas">

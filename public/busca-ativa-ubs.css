@@ -52,7 +52,7 @@
     .legend-p { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; color: #fff; background: var(--orange); font-size: 12px; }
     .workspace { display: grid; grid-template-columns: minmax(360px, 42%) 1fr; overflow: hidden; min-height: 390px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
     #map { min-height: 430px; }
-    .map-side { position: relative; border-right: 1px solid var(--line); }
+    .map-side { position: relative; display: flex; flex-direction: column; border-right: 1px solid var(--line); }
     .map-search { padding: 12px 14px; border-bottom: 1px solid var(--line); background: #fff; }
     .map-search h3 { margin-bottom: 7px; font-size: 14px; }
     .map-search-row { display: grid; grid-template-columns: 1fr auto; gap: 7px; }
@@ -95,6 +95,8 @@
     .details { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; margin-top: 14px; }
     .card { padding: 15px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
     .card p { margin: 5px 0 0; color: var(--muted); }
+    .selected-panel { padding: 14px 16px; border-top: 1px solid var(--line); background: #fff; }
+    .selected-panel p { margin: 5px 0 0; color: var(--muted); }
     .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 13px; }
     .detail-grid span { display: block; color: var(--muted); font-size: 11px; }
     .detail-grid strong { font-size: 13px; }
@@ -119,6 +121,9 @@
     .route-toggle[aria-expanded="true"] .chevron { transform: rotate(90deg); }
     .intake-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .intake-note { color: var(--muted); font-size: 12px; }
+    .patient-dialog { width: min(1160px, calc(100vw - 32px)); border: 0; border-radius: 16px; padding: 0; background: transparent; }
+    .patient-dialog::backdrop { background: rgba(17, 59, 70, .34); backdrop-filter: blur(2px); }
+    .dialog-card { padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: #fff; box-shadow: 0 24px 70px rgba(17, 59, 70, .25); }
     .route-form { display: grid; grid-template-columns: minmax(120px, .5fr) minmax(220px, 1fr) auto; gap: 8px; margin-top: 12px; }
     .route-remove-form { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 8px; margin-top: 10px; }
     .history-card th { background: #4f6870; }
