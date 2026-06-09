@@ -31,6 +31,10 @@
     .metric span { color: var(--muted); font-size: 12px; }
     .metric strong { display: block; margin-top: 2px; color: var(--navy); font-size: 23px; }
     .metric.orange strong { color: var(--orange); }
+    .ops-card { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
+    .ops-card p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .ops-actions { display: flex; align-items: center; justify-content: end; flex-wrap: wrap; gap: 8px; min-width: 360px; }
+    .ops-actions select { max-width: 220px; }
     .workspace { display: grid; grid-template-columns: minmax(360px, 42%) 1fr; overflow: hidden; min-height: 390px; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
     #map { min-height: 430px; }
     .map-side { position: relative; border-right: 1px solid var(--line); }
@@ -102,6 +106,8 @@
     .accordion-card > .intake-actions, .accordion-card > .footer-note { margin-bottom: 15px; }
     @media (max-width: 1050px) {
       .workspace { grid-template-columns: 1fr; }
+      .ops-card { align-items: stretch; flex-direction: column; }
+      .ops-actions { justify-content: start; min-width: 0; }
       .map-side { border-right: 0; border-bottom: 1px solid var(--line); }
       #map { min-height: 340px; }
     }
@@ -115,4 +121,20 @@
       .intake-form textarea { grid-column: span 1; }
       .route-form { grid-template-columns: 1fr; }
       .profile .profile-text { display: none; }
+    }
+    @media print {
+      .topbar, .demo-banner, .heading, .metrics, .ops-card, .map-side, .filters, .actions, .accordion-card, .details, .leaflet-control-container { display: none !important; }
+      body { background: #fff; color: #000; font-size: 11px; }
+      main { max-width: none; padding: 0; }
+      .workspace { display: block; border: 0; box-shadow: none; }
+      .table-side { width: 100%; }
+      .panel-title { padding: 0 0 8px; }
+      .panel-title::before { content: "BUSCA ATIVA - UBS LARGO DA BATALHA"; display: block; margin-bottom: 6px; font-size: 16px; font-weight: 800; text-align: center; }
+      .scroll { max-height: none; overflow: visible; border: 0; }
+      table { font-size: 10px; }
+      th { position: static; color: #000; background: #ddd; border: 1px solid #777; }
+      td { border: 1px solid #777; white-space: normal; }
+      .route-row td { position: static; color: #000; background: #eee; }
+      .route-toggle { color: #000; }
+      .visit-select { border: 0; appearance: none; }
     }

@@ -28,6 +28,18 @@
       <div class="metric"><span>Visitas agendadas</span><strong id="scheduledMetric">2</strong></div>
       <div class="metric"><span>Casos concluídos</span><strong id="doneMetric">1</strong></div>
     </section>
+    <section class="ops-card">
+      <div>
+        <h3>Operação do dia</h3>
+        <p><b id="pendingMetric">0</b> pendentes/tentativas/reagendamentos · <b id="outsideMetric">0</b> fora da área ou a conferir</p>
+      </div>
+      <div class="ops-actions">
+        <select id="printRouteSelect" aria-label="Rota para impressão"></select>
+        <button class="button secondary" onclick="printSelectedRoute()">Imprimir rota</button>
+        <button class="button secondary" onclick="exportCSV()">Exportar planilha</button>
+        <button class="button danger" onclick="resetDemoData()">Zerar base demo</button>
+      </div>
+    </section>
     <section class="workspace">
       <div class="map-side">
         <div class="map-search">
@@ -55,7 +67,7 @@
             <tbody id="patientRows"></tbody>
           </table>
         </div>
-        <div class="actions"><span class="result-count" id="resultCount"></span><button class="button" onclick="exportCSV()">Exportar planilha</button></div>
+        <div class="actions"><span class="result-count" id="resultCount"></span><button class="button" onclick="printCurrentTable()">Imprimir lista filtrada</button></div>
       </div>
     </section>
     <details class="card accordion-card" style="margin-top:14px;">
@@ -86,6 +98,7 @@
         <textarea id="newAssist" placeholder="Contato com assistência social / orientação / observação"></textarea>
       </div>
       <div class="intake-actions">
+        <button class="button secondary" onclick="geocodeNewAddress()">Conferir endereço do cadastro</button>
         <button class="button" onclick="addManualCase()">Adicionar à planilha</button>
         <span class="intake-note" id="intakeNote">Ao abrir pelo servidor interno, os dados são salvos no banco local.</span>
       </div>

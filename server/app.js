@@ -104,8 +104,51 @@ function seedDatabase() {
   }
 }
 
+function resetDemoDatabase() {
+  db.exec("BEGIN");
+  try {
+    db.exec("DELETE FROM patients; DELETE FROM routes; DELETE FROM sqlite_sequence WHERE name = 'patients';");
+    const insertRoute = db.prepare("INSERT INTO routes (code, name) VALUES (?, ?)");
+    seedRoutes.forEach(route => insertRoute.run(route.code, route.name));
+    const insertPatient = db.prepare(`
+      INSERT INTO patients
+        (route, name, birth, age, doc, contacts, address, area, reason, visit, visit_date, professional, visit_done, priority, status, last, lat, lng)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    seedPatients.forEach(patient => insertPatient.run(
+      patient.route,
+      patient.name,
+      patient.birth,
+      String(patient.age ?? ""),
+      patient.doc,
+      JSON.stringify(patient.contacts || []),
+      patient.address,
+      patient.area,
+      patient.reason,
+      patient.visit,
+      patient.visitDate,
+      patient.professional,
+      patient.visitDone,
+      patient.priority,
+      patient.status,
+      patient.last,
+      patient.lat,
+      patient.lng
+    ));
+    db.exec("COMMIT");
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/state") {
+    sendJson(res, 200, { routes: listRoutes(), patients: listPatients() });
+    return;
+  }
+  if (req.method === "POST" && url.pathname === "/api/reset-demo") {
+    resetDemoDatabase();
     sendJson(res, 200, { routes: listRoutes(), patients: listPatients() });
     return;
   }

@@ -49,6 +49,7 @@
     const icon = p => L.divIcon({html:`<div class="case-dot ${p.priority==="Alta"?"alta":p.priority==="Média"?"media":"baixa"}">${p.area}</div>`,className:"",iconSize:[26,26],iconAnchor:[13,13]});
     let apiAvailable = false;
     let selectedId = null;
+    let lastNewAddressPoint = null;
     async function loadState(){
       try {
         const state = await apiRequest("/api/state");
@@ -89,6 +90,8 @@
       highMetric.textContent=patients.filter(p=>p.priority==="Alta").length;
       scheduledMetric.textContent=patients.filter(p=>p.status==="Visita agendada").length;
       doneMetric.textContent=patients.filter(p=>p.status==="Concluído").length;
+      pendingMetric.textContent=patients.filter(p=>["Pendente","Verificar"].includes(p.status)||["Não","Tentativa","Reagendar"].includes(p.visitDone)).length;
+      outsideMetric.textContent=patients.filter(p=>areaText(p)==="Não").length;
       renderRoutes();
     }
     function syncMarkers(){
@@ -157,6 +160,11 @@
       const selected = newRoute.value;
       newRoute.innerHTML = routes.map(route => `<option value="${route.code}">${route.code} - ${route.name}</option>`).join("");
       if([...newRoute.options].some(option => option.value === selected)) newRoute.value = selected;
+      if(window.printRouteSelect){
+        const printSelected = printRouteSelect.value;
+        printRouteSelect.innerHTML = `<option value="">Todas as rotas filtradas</option>${routes.map(route => `<option value="${route.code}">${route.code} - ${route.name}</option>`).join("")}`;
+        if([...printRouteSelect.options].some(option => option.value === printSelected)) printRouteSelect.value = printSelected;
+      }
       routeNote.textContent = `Rotas cadastradas: ${routes.map(route => route.code).join(", ")}.`;
     }
     async function addRoute(){
@@ -289,30 +297,52 @@
       }
       return inside;
     }
-    function checkAddress(){
+    async function geocodeAddress(value){
+      const query = encodeURIComponent(`${value}, Niterói, RJ, Brasil`);
+      const response = await fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${query}&f=json&outFields=*&maxLocations=1&countryCode=BRA`);
+      const data = await response.json();
+      const candidate = data.candidates && data.candidates[0];
+      if(!candidate) throw new Error("Endereço não localizado. Confira rua, número e bairro.");
+      const point = [candidate.location.x, candidate.location.y];
+      const referenceAddress = isUnitReferenceAddress(value, candidate.address);
+      const referencePoint = isUnitReferencePoint(point);
+      const inside = pointInTerritory(point);
+      const accepted = inside || referenceAddress || referencePoint;
+      return { candidate, point, inside, accepted, referenceAddress, referencePoint };
+    }
+    function showAddressResult(result, target){
+      const { candidate, point, inside, accepted } = result;
+      const statusText = accepted ? (inside ? "Dentro da área da UBS" : "Referência da UBS / policlínica") : "Fora da área da UBS";
+      const resultText = accepted ? (inside ? "Sim, é da área da UBS Largo da Batalha." : "Sim, é endereço de referência da UBS/policlínica.") : "Não caiu dentro da área oficial da UBS.";
+      if(checkMarker) checkMarker.remove();
+      checkMarker = L.marker([point[1], point[0]]).addTo(map).bindPopup(`<b>Endereço consultado</b><br>${candidate.address}<br><b>${statusText}</b>`);
+      map.setView([point[1], point[0]], 16);
+      checkMarker.openPopup();
+      target.innerHTML = `<b>${resultText}</b><br><small>${candidate.address}</small><br><br>${inside ? "Validado pelo território cinza oficial." : accepted ? "Validado como ponto de referência da unidade, porque o desenho do território pode ficar na borda do mapa." : "Isso substitui a conferência manual no site da Prefeitura."}`;
+    }
+    async function checkAddress(){
       const value = addressCheck.value.trim();
       if(!value){ checkResult.textContent = "Digite um endereço para verificar."; return; }
       checkResult.textContent = "Consultando endereço...";
-      const query = encodeURIComponent(`${value}, Niterói, RJ, Brasil`);
-      fetch(`https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates?SingleLine=${query}&f=json&outFields=*&maxLocations=1&countryCode=BRA`)
-        .then(response => response.json())
-        .then(data => {
-          const candidate = data.candidates && data.candidates[0];
-          if(!candidate){ checkResult.textContent = "Endereço não localizado. Confira rua, número e bairro."; return; }
-          const point = [candidate.location.x, candidate.location.y];
-          const referenceAddress = isUnitReferenceAddress(value, candidate.address);
-          const referencePoint = isUnitReferencePoint(point);
-          const inside = pointInTerritory(point);
-          const accepted = inside || referenceAddress || referencePoint;
-          const statusText = accepted ? (inside ? "Dentro da área da UBS" : "Referência da UBS / policlínica") : "Fora da área da UBS";
-          const resultText = accepted ? (inside ? "Sim, é da área da UBS Largo da Batalha." : "Sim, é endereço de referência da UBS/policlínica.") : "Não caiu dentro da área oficial da UBS.";
-          if(checkMarker) checkMarker.remove();
-          checkMarker = L.marker([point[1], point[0]]).addTo(map).bindPopup(`<b>Endereço consultado</b><br>${candidate.address}<br><b>${statusText}</b>`);
-          map.setView([point[1], point[0]], 16);
-          checkMarker.openPopup();
-          checkResult.innerHTML = `<b>${resultText}</b><br><small>${candidate.address}</small><br><br>${inside ? "Validado pelo território cinza oficial." : accepted ? "Validado como ponto de referência da unidade, porque o desenho do território pode ficar na borda do mapa." : "Isso substitui a conferência manual no site da Prefeitura."}`;
-        })
-        .catch(() => { checkResult.textContent = "Não foi possível consultar o endereço agora."; });
+      try {
+        showAddressResult(await geocodeAddress(value), checkResult);
+      } catch (error) {
+        checkResult.textContent = error.message || "Não foi possível consultar o endereço agora.";
+      }
+    }
+    async function geocodeNewAddress(){
+      const value = newAddress.value.trim();
+      if(!value){ intakeNote.textContent = "Preencha o endereço antes de conferir."; return; }
+      intakeNote.textContent = "Conferindo endereço no mapa...";
+      try {
+        const result = await geocodeAddress(value);
+        lastNewAddressPoint = result.point;
+        showAddressResult(result, checkResult);
+        intakeNote.textContent = result.accepted ? "Endereço conferido e ponto preparado para salvar no paciente." : "Endereço localizado, mas ficou fora da área oficial. O ponto será salvo mesmo assim para conferência.";
+      } catch (error) {
+        lastNewAddressPoint = null;
+        intakeNote.textContent = error.message || "Não foi possível conferir o endereço agora.";
+      }
     }
     async function addManualCase(){
       const name = newName.value.trim();
@@ -320,6 +350,15 @@
       if(!name || !address){
         intakeNote.textContent = "Preencha pelo menos nome e endereço para adicionar o caso.";
         return;
+      }
+      if(!lastNewAddressPoint){
+        try {
+          const result = await geocodeAddress(address);
+          lastNewAddressPoint = result.point;
+          showAddressResult(result, checkResult);
+        } catch {
+          lastNewAddressPoint = null;
+        }
       }
       const id = patients.length ? Math.max(...patients.map(p => p.id)) + 1 : 1;
       const newCase = {
@@ -340,12 +379,13 @@
         visitDone:newVisitDone.value,
         status:newVisitDone.value === "Sim" ? "Concluído" : "Pendente",
         last:new Date().toLocaleDateString("pt-BR"),
-        lat:-22.9045,
-        lng:-43.0345
+        lat:lastNewAddressPoint ? lastNewAddressPoint[1] : -22.9045,
+        lng:lastNewAddressPoint ? lastNewAddressPoint[0] : -43.0345
       };
       const savedCase = apiAvailable ? await apiRequest("/api/patients", { method:"POST", body:JSON.stringify(newCase) }) : newCase;
       patients.push(savedCase);
       [newName,newBirth,newDoc,newPhones,newAddress,newVisitDate,newProfessional,newProblem,newAssist].forEach(field => field.value = "");
+      lastNewAddressPoint = null;
       intakeNote.textContent = apiAvailable ? "Caso salvo no banco local. Use a conferência de endereço para validar a área da UBS." : "Caso adicionado nesta tela. Abra pelo servidor para salvar no banco.";
       selectedId = savedCase.id;
       render();
@@ -384,11 +424,22 @@
     async function saveSelectedChanges(){
       if(!selectedId) return;
       const p=patients.find(item=>item.id===selectedId);
+      const previousAddress = p.address;
       p.name=editName.value.trim();
       p.birth=editBirth.value.trim();
       p.doc=editDoc.value.trim();
       p.contacts=parseContacts(editContacts.value);
       p.address=editAddress.value.trim();
+      if(p.address && p.address !== previousAddress){
+        try {
+          const result = await geocodeAddress(p.address);
+          p.lng = result.point[0];
+          p.lat = result.point[1];
+          showAddressResult(result, checkResult);
+        } catch {
+          selectedHint.innerHTML=`<b>${p.name}</b> | endereço salvo, mas não foi possível atualizar o ponto no mapa`;
+        }
+      }
       p.visitDate=editVisitDate.value.trim();
       p.professional=editProfessional.value.trim();
       p.visit=editVisit.value.trim();
@@ -413,6 +464,37 @@
       render();
       if(selectedId===id) detailGrid.innerHTML=patientEditor(p);
     }
+    function printSelectedRoute(){
+      const route = printRouteSelect.value;
+      if(route){
+        search.value = "";
+        priorityFilter.value = "";
+        statusFilter.value = "";
+        areaFilter.value = "";
+        expandedRoutes.clear();
+        expandedRoutes.add(route);
+      }
+      render();
+      window.print();
+    }
+    function printCurrentTable(){
+      render();
+      window.print();
+    }
+    async function resetDemoData(){
+      if(!apiAvailable){
+        alert("Abra pelo servidor interno para reiniciar a base demo.");
+        return;
+      }
+      if(!confirm("Zerar a base atual e voltar para os dados fictícios de demonstração? Use isso só em teste/treinamento.")) return;
+      const state = await apiRequest("/api/reset-demo", { method:"POST", body:"{}" });
+      routes = state.routes;
+      patients = state.patients;
+      selectedId = null;
+      detailGrid.innerHTML = "";
+      selectedHint.textContent = "Base demo reiniciada. Selecione um paciente na planilha ou no mapa.";
+      render();
+    }
     function selectOptions(values,selected){
       return values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
     }
@@ -427,9 +509,13 @@
       addRoute,
       checkAddress,
       exportCSV,
+      geocodeNewAddress,
+      printCurrentTable,
+      printSelectedRoute,
       removePatient,
       render,
       resetFilters,
+      resetDemoData,
       saveSelectedChanges,
       selectPatient,
       toggleRoute,

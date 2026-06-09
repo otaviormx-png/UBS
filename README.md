@@ -12,6 +12,9 @@ Protótipo de sistema interno para acompanhamento de busca ativa da UBS Largo da
 - Edição de paciente com botão explícito de salvar.
 - Remoção de paciente da lista.
 - Exportação de planilha `.xls` organizada por rota.
+- Impressão da lista filtrada ou de uma rota específica.
+- Geocodificação do endereço para posicionar o paciente no mapa.
+- Reinício da base fictícia de demonstração para treino/teste.
 
 ## Observação importante
 
@@ -69,6 +72,22 @@ http://192.168.200.175:3000
 
 Se outro computador da rede nao abrir, clique com o botao direito em `liberar-firewall-admin.bat` e escolha **Executar como administrador**.
 
+## Iniciar junto com o Windows
+
+Para deixar o sistema iniciar quando o Windows abrir, clique com o botao direito em:
+
+```text
+instalar-inicializacao-admin.bat
+```
+
+E escolha **Executar como administrador**.
+
+Para desfazer:
+
+```text
+remover-inicializacao-admin.bat
+```
+
 O banco local fica em:
 
 ```text
@@ -86,6 +105,15 @@ backup-banco.bat
 ```
 
 Os backups ficam na pasta `backups/`, que tambem nao deve ser enviada ao GitHub.
+
+## Recursos operacionais
+
+Na tela principal:
+
+- `Imprimir rota`: escolhe uma rota e abre a impressão só daquela lista.
+- `Imprimir lista filtrada`: imprime o que estiver aparecendo na planilha.
+- `Conferir endereço do cadastro`: busca o endereço do paciente novo e prepara o ponto no mapa antes de salvar.
+- `Zerar base demo`: apaga a base atual e recria os pacientes fictícios de demonstração. Use apenas em teste.
 
 ## Evolução para sistema funcional
 

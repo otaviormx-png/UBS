@@ -161,3 +161,7 @@ Primeira base funcional iniciada:
 - API para marcar VD;
 - API para retirar paciente da lista;
 - tela pública em `public/` conectada ao servidor.
+- geocodificação do endereço no cadastro/edição;
+- impressão da lista filtrada e de rota específica;
+- reinício da base demo pela interface;
+- scripts para iniciar com dois cliques e registrar inicialização no Windows.
