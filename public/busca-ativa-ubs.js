@@ -66,6 +66,7 @@
     let lastNewAddressPoint = null;
     let lastNewAddressLookup = null;
     let lastNewAddressValue = "";
+    let newAddressLookupRequest = 0;
     async function loadState(){
       try {
         const state = await apiRequest("/api/state");
@@ -447,15 +448,18 @@
     async function geocodeNewAddress(){
       const value = newAddress.value.trim();
       if(!value){ intakeNote.textContent = "Preencha o endereço antes de conferir."; return; }
+      const requestId = ++newAddressLookupRequest;
       intakeNote.textContent = "Conferindo endereço no mapa...";
       try {
         const result = await geocodeAddress(value);
+        if(requestId !== newAddressLookupRequest || newAddress.value.trim() !== value) return;
         lastNewAddressPoint = result.point;
         lastNewAddressLookup = result.officialLookup;
         lastNewAddressValue = value;
         showAddressResult(result, checkResult);
         intakeNote.textContent = result.accepted ? "Endereço conferido e ponto preparado para salvar no paciente." : "Endereço localizado, mas ficou fora da área oficial. O ponto será salvo mesmo assim para conferência.";
       } catch (error) {
+        if(requestId !== newAddressLookupRequest || newAddress.value.trim() !== value) return;
         lastNewAddressPoint = null;
         lastNewAddressLookup = null;
         lastNewAddressValue = "";
@@ -664,6 +668,14 @@
       const dateFields = [window.newBirth, window.newVisitDate].filter(Boolean);
       dateFields.forEach(field => field.addEventListener("input", () => { field.value = formatDateInput(field.value); }));
       if(window.newDoc) newDoc.addEventListener("input", () => { newDoc.value = formatDocumentInput(newDoc.value); });
+      if(window.newAddress) newAddress.addEventListener("input", clearNewAddressLookup);
+    }
+    function clearNewAddressLookup(){
+      newAddressLookupRequest += 1;
+      lastNewAddressPoint = null;
+      lastNewAddressLookup = null;
+      lastNewAddressValue = "";
+      if(window.intakeNote) intakeNote.textContent = "Endereço alterado. Clique em conferir para atualizar o mapa.";
     }
     function formatRemovedAt(value){
       if(!value) return "Sem data registrada";
